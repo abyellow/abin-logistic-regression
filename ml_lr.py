@@ -1,26 +1,30 @@
-#Edit Bin H.
-#machine learning -- logistic regression
-from numpy import *
+#!/usr/bin/env python
+"""
+Edit Bin H.
+machine learning -- logistic regression
+"""
+import numpy as np
 
 #Class machine learning of logistic regression
-class ml_lr:
+class LogReg:
 
 	#Initialize data set, iteration time, learning rate and weight function
-	def __init__(self, xtest, ytest, xset, yset, iterNum=10000, wet_iv=.1, learningRate = .1,lmda = .1):
+	def __init__(self, xtest, ytest, xset, yset, iter_num=10000, wet_iv=.1,
+			 learningRate = .1,lmda = .1):
 
 		self.xtest,self.ytest = xtest, ytest
 		self.xset,self.yset = xset, yset
-		self.iterNum = iterNum
-		self.xveclen = size(xset,1)
-		self.wet_ini = array([wet_iv]*self.xveclen)
+		self.iter_num = iter_num
+		self.xveclen = np.size(xset,1)
+		self.wet_ini = np.array([wet_iv]*self.xveclen)
 		self.learningRate = learningRate 
 	
 	#random distribute data set into 80% train data and 20% of test data
 	def rand_8020(self, xset, yset):
 
-		xlen = size(xset,0)
+		xlen = np.size(xset,0)
 		xtrainlen = int(xlen * .8)
-		indices = random.permutation(xlen)
+		indices = np.random.permutation(xlen)
 		train_idx, test_idx = indices[:xtrainlen], indices[xtrainlen:]
 		xtrain, xtest = xset[train_idx,:], xset[test_idx,:]
 		ytrain, ytest = yset[train_idx], yset[test_idx]
@@ -34,31 +38,31 @@ class ml_lr:
 		xveclen = self.xveclen
 		
 		wet  = self.wet_ini
-		xlen = size(xtrain,0)
+		xlen = np.size(xtrain,0)
 
-		for itr in range(1,self.iterNum):
+		for itr in range(1,self.iter_num):
 		
-			gradL = zeros(xveclen) + lmda*wet
-			likehood = lmda/2.*dot(wet,wet)		
+			gradL = np.zeros(xveclen) + lmda*wet
+			likehood = lmda/2.*np.dot(wet,wet)		
 
 			for i in range(xlen):
 
 				xdata = xtrain[i,:]
 				ydata = ytrain[i]
-				val = -ydata*dot(xdata,wet)
+				val = -ydata*np.dot(xdata,wet)
 				if abs(val) > 700:
 					val = sign(val)*700
-				prob = 1/(1+exp(val))
+				prob = 1/(1+np.exp(val))
 				gradL += -ydata*xdata*(1-prob)
-				likehood += log(1+exp(val))
+				likehood += np.log(1+np.exp(val))
 
-			wet = wet - learningRate*gradL/sqrt(itr)
+			wet = wet - learningRate*gradL/np.sqrt(itr)
 
-			check = linalg.norm(gradL)	
+			check = np.linalg.norm(gradL)	
 			if itr % 10000 == 0 :
-				learningRate = sqrt(itr)*learningRate
+				learningRate = np.sqrt(itr)*learningRate
 			if itr % 100 == 0: 
-				print 'iter_time:', itr, 'abs(gradL):', check, 'likehood:', likehood, 'lmda:', lmda
+				print 'iter_time:', itr, 'abs(gradL):', check, 'likehood:', likehood
 			if check <= 0.01:
 				break
 		print 'wet:', wet, ' lambda:', lmda
@@ -68,14 +72,14 @@ class ml_lr:
 	#cross validation function to check overfitting
 	def cross_valid(self, wet, xslt, yslt):
 
-		xlen = size(xslt,0)
-		xveclen = size(xslt,1)
+		xlen = np.size(xslt,0)
+		xveclen = np.size(xslt,1)
 		ypred = -1.*ones(xlen)
 		
 		for i in range(xlen):
 			
-			val = -1*dot(wet, xslt[i,:])
-			prob = 1/(1+exp(val))
+			val = -1*np.dot(wet, xslt[i,:])
+			prob = 1/(1+np.exp(val))
 			if prob > .5:
 				ypred[i] = 1	
 
@@ -88,7 +92,7 @@ if __name__ =='__main__':
 	def main(lmda, xset, yset, xtest, ytest):
 
 		#Class ml_rlr and input data sets
-		lr1 = ml_lr(xtest,ytest,xset,yset)
+		lr1 = LogReg(xtest,ytest,xset,yset)
 
 		#rand data set for 80% train data and 20% of slt data
 		xtrain, xslt, ytrain, yslt = lr1.rand_8020(xset, yset)
@@ -119,15 +123,15 @@ if __name__ =='__main__':
 
 	
 	#Load train data and test data
-	xtest = loadtxt ('heartstatlog/heartstatlog_testSet.txt') 
-	ytest = loadtxt ('heartstatlog/heartstatlog_testLabels.txt') 
-	xset = loadtxt ('heartstatlog/heartstatlog_trainSet.txt')
-	yset = loadtxt ('heartstatlog/heartstatlog_trainLabels.txt') 
+	xtest = np.loadtxt ('heartstatlog/heartstatlog_testSet.txt') 
+	ytest = np.loadtxt ('heartstatlog/heartstatlog_testLabels.txt') 
+	xset = np.loadtxt ('heartstatlog/heartstatlog_trainSet.txt')
+	yset = np.loadtxt ('heartstatlog/heartstatlog_trainLabels.txt') 
 
 	#Renormalize of x data set and shift y data set to 1 and -1
-	xtest = xtest/amax(xtest,0)
+	xtest = xtest/np.amax(xtest,0)
 	ytest = 2.*(ytest-1.5)
-	xset = xset/amax(xset,0)
+	xset = xset/np.amax(xset,0)
 	yset = 2.*(yset -1.5)
 		
 	#Given different lambda to test
